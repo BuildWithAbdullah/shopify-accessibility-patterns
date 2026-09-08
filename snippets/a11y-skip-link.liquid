@@ -1,0 +1,46 @@
+{%- comment -%}
+  Skip link
+  WCAG 2.4.1 Bypass Blocks (Level A)
+
+  Render as the first element inside <body> in layout/theme.liquid:
+
+    {% render 'a11y-skip-link' %}
+
+  The target must exist and must be focusable. In theme.liquid:
+
+    <main id="MainContent" role="main" tabindex="-1">
+
+  tabindex="-1" is the part that is usually missing. Without it several
+  browsers scroll to the target but leave focus where it was, so the next Tab
+  press returns to the second navigation link and the skip link has done
+  nothing. The bug is invisible unless you press Tab straight after activating
+  the link.
+
+  Do not hide this with display:none or visibility:hidden. Both remove it from
+  the tab order, so it can never be reached and never used. It must be offset
+  off screen while remaining focusable.
+{%- endcomment -%}
+
+<a class="a11y-skip-link" href="#MainContent">
+  {{ 'accessibility.skip_to_text' | t: default: 'Skip to main content' }}
+</a>
+
+{%- style -%}
+  .a11y-skip-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 0.75rem 1rem;
+    background: rgb(var(--color-background, 255 255 255));
+    color: rgb(var(--color-foreground, 18 18 18));
+    text-decoration: underline;
+    transform: translateY(-200%);
+  }
+
+  .a11y-skip-link:focus {
+    transform: translateY(0);
+    outline: 3px solid rgb(var(--color-foreground, 18 18 18));
+    outline-offset: 2px;
+  }
+{%- endstyle -%}

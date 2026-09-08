@@ -1,0 +1,91 @@
+{%- comment -%}
+  Product card without nested interactive controls
+  WCAG 4.1.2 Name Role Value, 2.4.4 Link Purpose, 1.1.1 Non-text Content
+
+  Usage:  {% render 'a11y-product-card', product: product %}
+
+  The failure this replaces:
+
+    <a href="{{ product.url }}">
+      <img src="...">
+      <h3>{{ product.title }}</h3>
+      <button>Quick add</button>          <-- button inside a link
+    </a>
+
+  A button inside a link is one target carrying two conflicting roles. Screen
+  readers disagree about what to announce, keyboard activation is
+  unpredictable, and axe reports it as nested-interactive. It is extremely
+  common in product grids because wrapping the whole card in an anchor is the
+  quickest way to make the entire card clickable.
+
+  The fix is to keep the controls as siblings and make the card look clickable
+  with a stretched pseudo-element on the title link. Mouse users get the whole
+  card as a target. Keyboard and screen reader users get two clearly separate
+  controls, each with its own name.
+
+  The quick-add button carries hidden text naming the product, so that a
+  screen reader user listing controls on a grid of twenty products does not
+  hear "Quick add" twenty times with no way to tell them apart.
+{%- endcomment -%}
+
+<div class="a11y-card">
+  <div class="a11y-card__media">
+    {%- if product.featured_media -%}
+      {{ product.featured_media | image_url: width: 600 | image_tag:
+         loading: 'lazy',
+         widths: '300, 600, 900',
+         alt: product.featured_media.alt | default: product.title | escape }}
+    {%- endif -%}
+  </div>
+
+  <h3 class="a11y-card__title">
+    <a class="a11y-card__link" href="{{ product.url }}">{{ product.title | escape }}</a>
+  </h3>
+
+  <p class="a11y-card__price">
+    {%- comment -%}
+      Price markup is decorated visually for sale items. The hidden text
+      supplies the meaning that the strikethrough conveys visually, because
+      a screen reader does not announce a line through a number.
+    {%- endcomment -%}
+    {%- if product.compare_at_price > product.price -%}
+      <span class="visually-hidden">Sale price</span>
+      <span class="a11y-card__price--sale">{{ product.price | money }}</span>
+      <span class="visually-hidden">Regular price</span>
+      <s>{{ product.compare_at_price | money }}</s>
+    {%- else -%}
+      <span class="visually-hidden">Price</span>
+      {{ product.price | money }}
+    {%- endif -%}
+  </p>
+
+  {%- if product.available and product.variants.size == 1 -%}
+    <form method="post" action="{{ routes.cart_add_url }}">
+      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+      <button type="submit" class="a11y-card__add">
+        Quick add<span class="visually-hidden">, {{ product.title | escape }}</span>
+      </button>
+    </form>
+  {%- endif -%}
+</div>
+
+{%- style -%}
+  .a11y-card { position: relative; }
+
+  /* The stretched link makes the whole card clickable for a pointer without
+     nesting anything inside anything. Keep every other control above it in
+     the stacking order so they stay independently clickable. */
+  .a11y-card__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .a11y-card__add { position: relative; z-index: 2; }
+
+  .a11y-card__link:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+  }
+{%- endstyle -%}

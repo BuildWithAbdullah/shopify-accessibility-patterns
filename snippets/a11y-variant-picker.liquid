@@ -1,0 +1,89 @@
+{%- comment -%}
+  Variant picker as a labelled radio group
+  WCAG 1.3.1 Info and Relationships, 2.1.1 Keyboard, 4.1.2 Name Role Value
+
+  Usage:  {% render 'a11y-variant-picker', product: product %}
+
+  What this replaces: swatches built from div or span elements with click
+  handlers. Those cannot be reached by keyboard at all, have no group name,
+  and convey the selected state with a border colour and nothing else.
+
+  Native radio inputs give you, at no cost:
+
+  - keyboard operation, including arrow-key movement within the group
+  - a single tab stop for the whole group, which is the expected behaviour
+  - the selected state announced automatically
+  - the group question announced on entry, from the legend
+  - correct behaviour in Windows high contrast mode
+
+  Colour swatches must carry the colour name as text. A swatch that is only a
+  coloured square conveys its value by colour alone, which fails 1.4.1
+  regardless of how the control is built.
+{%- endcomment -%}
+
+{%- unless product.has_only_default_variant -%}
+  {%- for option in product.options_with_values -%}
+    <fieldset class="a11y-variant" data-option-index="{{ forloop.index0 }}">
+      <legend class="a11y-variant__legend">{{ option.name | escape }}</legend>
+
+      {%- for value in option.values -%}
+        {%- assign input_id = 'opt-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0 -%}
+        <input
+          type="radio"
+          class="visually-hidden a11y-variant__input"
+          id="{{ input_id }}"
+          name="{{ option.name | escape }}"
+          value="{{ value | escape }}"
+          {% if option.selected_value == value %}checked{% endif %}
+        >
+        <label class="a11y-variant__label" for="{{ input_id }}">{{ value | escape }}</label>
+      {%- endfor -%}
+    </fieldset>
+  {%- endfor -%}
+{%- endunless -%}
+
+{%- style -%}
+  /* The input is visually hidden but still focusable and still operable.
+     It is NOT display:none, which would remove it from the tab order and
+     break the control entirely. */
+  .a11y-variant__input.visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .a11y-variant__label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    /* 3:1 minimum against the background, per 1.4.11. Hairline greys such as
+       #ddd are around 1.3:1 and fail. */
+    border: 1px solid #767676;
+    cursor: pointer;
+  }
+
+  /* Selection is shown by more than colour: the border thickens and the fill
+     inverts, so the state survives greyscale and high contrast mode. */
+  .a11y-variant__input:checked + .a11y-variant__label {
+    border-width: 2px;
+    background: rgb(var(--color-foreground, 18 18 18));
+    color: rgb(var(--color-background, 255 255 255));
+  }
+
+  /* Focus follows the input onto its label, because the input itself is
+     off screen. Without this rule the group has no visible focus at all. */
+  .a11y-variant__input:focus-visible + .a11y-variant__label {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .a11y-variant { border: 0; padding: 0; margin: 0 0 1rem; }
+  .a11y-variant__legend { padding: 0; margin-bottom: 0.5rem; font-weight: 600; }
+{%- endstyle -%}

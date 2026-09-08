@@ -1,0 +1,59 @@
+{%- comment -%}
+  Accessible icon-only button
+  WCAG 1.1.1 Non-text Content, 4.1.2 Name Role Value, 2.5.8 Target Size
+
+  Usage:
+
+    {% render 'a11y-icon-button',
+       icon: 'cart',
+       label: 'Open cart drawer',
+       controls: 'CartDrawer',
+       expanded: false %}
+
+  Why visually hidden text rather than aria-label:
+
+  - It is translated by browser page translation. aria-label frequently is not.
+  - It survives an icon set that fails to load.
+  - Voice control users say the visible text. When aria-label differs from the
+    visible label, "click cart" stops working. That mismatch is its own
+    failure under 2.5.3 Label in Name.
+  - It is visible in the DOM to whoever maintains this template next.
+
+  Header icon buttons (cart, search, account, menu) are the highest volume
+  source of unnamed controls on Shopify themes. One shared snippet fixes all
+  of them at once and stops the problem returning.
+{%- endcomment -%}
+
+<button
+  type="button"
+  class="a11y-icon-button"
+  {% if controls %}aria-controls="{{ controls }}"{% endif %}
+  {% unless expanded == nil %}aria-expanded="{{ expanded | default: false }}"{% endunless %}
+>
+  {%- render 'icon-' | append: icon -%}
+  <span class="visually-hidden">{{ label }}</span>
+</button>
+
+{%- style -%}
+  /* The glyph stays whatever size the design calls for. The target is grown
+     to the 24 by 24 CSS px that 2.5.8 requires at Level AA. Note that the AA
+     minimum is 24, not 44. 44 is 2.5.5 at Level AAA and the Apple guideline,
+     and it is very often misattributed to 2.5.8 in audit reports. */
+  .a11y-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0.5rem;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .a11y-icon-button:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+  }
+{%- endstyle -%}

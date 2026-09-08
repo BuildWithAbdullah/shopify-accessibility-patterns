@@ -1,0 +1,136 @@
+/* ---------------------------------------------------------------------------
+   a11y-base.css
+   Theme-level accessibility baseline for Shopify Online Store 2.0 themes.
+
+   Load after the theme stylesheet in layout/theme.liquid:
+
+     {{ 'a11y-base.css' | asset_url | stylesheet_tag }}
+
+   Everything here is either a fix for something themes commonly get wrong, or
+   a utility the snippets in this repository depend on.
+   --------------------------------------------------------------------------- */
+
+
+/* 1. The visually hidden utility
+   ---------------------------------------------------------------------------
+   Content is removed from view but stays in the accessibility tree and,
+   crucially, stays focusable. Every snippet here depends on this class.
+
+   Do not replace it with display:none or visibility:hidden. Those remove the
+   content from the accessibility tree and from the tab order, which is the
+   opposite of what is wanted. */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* 2. Focus visibility
+   ---------------------------------------------------------------------------
+   Search the theme for `outline: none` and `outline: 0` before adding this.
+   A single global outline reset disables keyboard navigation for the entire
+   store, and it is present in a large share of shipped themes because a
+   designer objected to the ring appearing on mouse click.
+
+   :focus-visible is the answer to that objection. It shows the indicator for
+   keyboard and other non-pointer input and suppresses it for mouse clicks. */
+
+:focus-visible {
+  outline: 3px solid rgb(var(--color-foreground, 18 18 18));
+  outline-offset: 2px;
+}
+
+/* Two-tone ring for sections that invert the colour scheme. One light layer
+   and one dark layer means at least one of them always contrasts with what is
+   behind it, so no per-section overrides are needed. A single-colour ring is
+   the usual reason focus is visible in the header and invisible in the
+   footer. */
+.color-inverse :focus-visible,
+[data-color-scheme="inverse"] :focus-visible {
+  outline-color: rgb(var(--color-background, 255 255 255));
+  box-shadow:
+    0 0 0 6px rgb(var(--color-foreground, 18 18 18)),
+    0 0 0 9px rgb(var(--color-background, 255 255 255));
+}
+
+/* Windows high contrast mode discards author colours and a coloured outline
+   can disappear entirely. A transparent outline is repainted by the OS in the
+   user's own colours. */
+@media (forced-colors: active) {
+  :focus-visible { outline: 3px solid transparent; }
+}
+
+
+/* 3. Target size, WCAG 2.5.8 Level AA
+   ---------------------------------------------------------------------------
+   The AA minimum is 24 by 24 CSS px, not 44. 44 is 2.5.5 at Level AAA and the
+   Apple guideline. Audit reports misattribute 44 to 2.5.8 constantly, which
+   inflates finding counts and sends clients to redesign conforming
+   components.
+
+   Grow the target, not the glyph. */
+
+.a11y-target,
+button.icon-button,
+.header__icon,
+.pagination__item {
+  min-width: 24px;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* 4. Motion
+   ---------------------------------------------------------------------------
+   WCAG 2.3.3. Carousels, parallax headers and scroll-triggered reveals are
+   standard in commerce themes and are a real trigger for vestibular
+   disorders. */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* 5. Control boundaries, WCAG 1.4.11
+   ---------------------------------------------------------------------------
+   Hairline greys are a house style in most modern themes and all of them
+   fail. #ddd is about 1.3:1 on white; the requirement is 3:1. #767676 is
+   4.5:1 and changes the visual weight far less than designers expect. */
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea,
+.field__input {
+  border: 1px solid #767676;
+}
+
+
+/* 6. Reflow, WCAG 1.4.10
+   ---------------------------------------------------------------------------
+   Scope horizontal scrolling to the component that needs it. Size charts and
+   comparison tables are the documented exception; the page is not.
+   A scroll container a mouse can drag must be reachable by keyboard, so it
+   needs tabindex="0" in the markup as well as this rule. */
+
+.table-wrapper,
+.a11y-scroll-x {
+  overflow-x: auto;
+}
