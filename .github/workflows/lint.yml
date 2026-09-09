@@ -1,0 +1,39 @@
+name: lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # The step fails if it finds nothing to check.
+      #
+      # A lint whose glob matches no files exits 0 and reports green forever,
+      # including after somebody renames the directory it was pointed at. That
+      # is worse than having no lint, because it looks like coverage.
+      #
+      # This is a syntax check, not a linter with opinions. It catches the
+      # unclosed brace in a snippet somebody is about to paste into a theme,
+      # which is the failure this repository can actually cause.
+      - name: Syntax-check JavaScript
+        run: |
+          mapfile -t files < <(find . -type f \( -name '*.js' -o -name '*.mjs' \) \
+            -not -path './node_modules/*' -not -path './.git/*' | sort)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No JavaScript found. This check would otherwise pass by checking nothing."
+            exit 1
+          fi
+          echo "Checking ${#files[@]} file(s) with $(node --version)"
+          for f in "${files[@]}"; do
+            echo "  $f"
+            node --check "$f"
+          done
