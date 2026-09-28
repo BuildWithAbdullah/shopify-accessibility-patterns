@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Header icons, unnamed</title>
+  <style>
+    .header__icon { display: inline-flex; min-width: 24px; min-height: 24px; background: none; border: 0; }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <!-- The glyph is decorative and correctly hidden, which leaves the button
+         with nothing to announce. This is the most common unnamed control on a
+         Shopify theme, and it repeats on every page in the store. -->
+    <button type="button" class="header__icon">
+      <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
+        <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="2"></circle>
+        <path d="M13.5 13.5 18 18" stroke="currentColor" stroke-width="2"></path>
+      </svg>
+    </button>
+
+    <button type="button" class="header__icon">
+      <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
+        <path d="M3 5h14l-1.5 10H4.5Z" fill="none" stroke="currentColor" stroke-width="2"></path>
+      </svg>
+    </button>
+  </header>
+</body>
+</html>
