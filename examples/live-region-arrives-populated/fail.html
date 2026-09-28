@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live region inserted with its message already in it</title>
+  <style>
+    .cart-status { position: absolute; left: -9999px; }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <h1>Wool throw</h1>
+  <button type="button" class="button">Add to cart</button>
+
+  <!-- This is what the theme's cart script appends after a successful add. The
+       element arrives already containing its text, so there is no mutation for
+       the accessibility layer to observe and, in most screen reader and browser
+       pairs, nothing is announced at all. The markup looks correct, which is
+       why this survives review. -->
+  <div class="cart-status" role="status" aria-live="polite" aria-atomic="true">Added to cart. 3 items, 84.00.</div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live region present and empty before the first message</title>
+  <style>
+    /* Off screen, never display:none. A region that is not rendered is not
+       observed, and nothing in it is announced. */
+    #a11y-live-region {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+      white-space: nowrap; border: 0;
+    }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <h1>Wool throw</h1>
+  <button type="button" class="button">Add to cart</button>
+
+  <!-- In the document, empty, before anything needs announcing. The text is
+       written on a later frame, which is the mutation that gets announced. One
+       region for the whole store: assets/a11y-announcer.js owns it, and the
+       sequencing is in tools/announce.mjs. -->
+  <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
