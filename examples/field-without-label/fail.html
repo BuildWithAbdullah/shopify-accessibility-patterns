@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Newsletter field labelled by its placeholder</title>
+  <style>
+    .field { min-height: 44px; border: 1px solid #767676; font-size: 1rem; }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <!-- A placeholder is not a label. It disappears the moment the field has
+       content, so it is gone exactly when a user wants to check what they are
+       filling in, it is low contrast by default in every browser, and it is not
+       reliably announced. The footer signup form is where this lives on almost
+       every theme. -->
+  <form method="post" action="/contact#newsletter">
+    <input type="email" class="field" name="contact[email]" placeholder="Email">
+    <button type="submit" class="button">Subscribe</button>
+  </form>
+</body>
+</html>

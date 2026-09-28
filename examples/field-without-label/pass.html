@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Newsletter field with a real label</title>
+  <style>
+    .field { min-height: 44px; border: 1px solid #767676; font-size: 1rem; }
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+      white-space: nowrap; border: 0;
+    }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <!-- A real label, associated by for and id. Hiding it visually is a design
+       decision and costs nothing here, because the association is what the
+       accessibility layer reads. autocomplete is 1.3.5 and it is also the
+       difference between a form a user fills in once and one they fill in every
+       time. -->
+  <form method="post" action="/contact#newsletter">
+    <label class="visually-hidden" for="NewsletterEmail">Email address</label>
+    <input type="email"
+           class="field"
+           id="NewsletterEmail"
+           name="contact[email]"
+           autocomplete="email"
+           placeholder="you@example.com">
+    <button type="submit" class="button">Subscribe</button>
+  </form>
+</body>
+</html>
