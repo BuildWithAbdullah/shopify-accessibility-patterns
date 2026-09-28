@@ -1,0 +1,82 @@
+{
+  "note": "Every entry is asserted by tools/verify.mjs: the failing page trips its own check and nothing else, and the corrected page trips no check in the repository at all.",
+  "examples": [
+    {
+      "directory": "unnamed-icon-button",
+      "check": "unnamed-control",
+      "criteria": ["1.1.1", "4.1.2"],
+      "summary": "Header icon buttons whose only content is a decorative glyph, so there is nothing to announce.",
+      "correction": "Visually hidden text inside the button, which survives translation, a failed icon set and voice control."
+    },
+    {
+      "directory": "nested-interactive-card",
+      "check": "nested-interactive",
+      "criteria": ["4.1.2"],
+      "summary": "A quick add button inside the anchor that wraps the whole product card.",
+      "correction": "Controls as siblings, with a stretched pseudo-element on the title link keeping the card clickable for a pointer."
+    },
+    {
+      "directory": "swatch-not-a-control",
+      "check": "swatch-not-a-control",
+      "criteria": ["1.3.1", "2.1.1", "4.1.2"],
+      "summary": "Variant swatches built from div elements with click handlers: no keyboard access, no group name, state in a border colour.",
+      "correction": "A fieldset and legend around native radio inputs, with the colour name as text."
+    },
+    {
+      "directory": "skip-link-unusable",
+      "check": "skip-link-unusable",
+      "criteria": ["2.4.1"],
+      "summary": "A skip link hidden with display:none, pointing at a target that cannot take focus.",
+      "correction": "Offset off screen and brought back on focus, with tabindex=\"-1\" on the target."
+    },
+    {
+      "directory": "focus-outline-removed",
+      "check": "focus-outline-removed",
+      "criteria": ["2.4.7"],
+      "summary": "A global outline reset, added to stop the ring appearing on mouse click.",
+      "correction": ":focus-visible, which shows the indicator for keyboard input and suppresses it for pointers, plus a forced-colors fallback."
+    },
+    {
+      "directory": "viewport-scaling-blocked",
+      "check": "viewport-scaling-blocked",
+      "criteria": ["1.4.4"],
+      "summary": "user-scalable=no and maximum-scale=1 on the viewport meta tag.",
+      "correction": "No scaling restriction, and a 16px minimum font size on fields, which is what the restriction was usually reaching for."
+    },
+    {
+      "directory": "dialog-not-a-dialog",
+      "check": "dialog-not-a-dialog",
+      "criteria": ["1.3.1", "4.1.2"],
+      "summary": "A cart drawer with no role, no aria-modal and no accessible name.",
+      "correction": "Dialog semantics and a name pointing at the heading already present. The behaviour half is in assets/a11y-focus-trap.js."
+    },
+    {
+      "directory": "meaning-in-colour-only",
+      "check": "meaning-in-colour-only",
+      "criteria": ["1.4.1"],
+      "summary": "Sale and regular prices distinguished by a strikethrough and a red, with no text saying which is which.",
+      "correction": "Hidden labels naming each price, with no visual change."
+    },
+    {
+      "directory": "live-region-arrives-populated",
+      "check": "live-region-arrives-populated",
+      "criteria": ["4.1.3"],
+      "summary": "The cart status region appended to the page with its message already inside it, so there is no mutation to observe.",
+      "correction": "One empty region in the document before the first message, written on a later frame."
+    },
+    {
+      "directory": "field-without-label",
+      "check": "field-without-label",
+      "criteria": ["1.3.5", "3.3.2", "4.1.2"],
+      "summary": "A newsletter email field whose placeholder is doing the work of a label, with no autocomplete token.",
+      "correction": "A real label associated by for and id, hidden visually, plus autocomplete=\"email\"."
+    },
+    {
+      "directory": "target-under-24px",
+      "check": "target-under-24px",
+      "criteria": ["2.5.8"],
+      "summary": "Pagination links sized 16 by 16, because the target was sized to the glyph.",
+      "correction": "A 24 by 24 minimum on the hit area with the digit left at its original size."
+    }
+  ]
+}
