@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22']
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+
+      # There are no dependencies, on purpose, so there is nothing to install
+      # and nothing to cache. The matrix is the point: the oldest version in it
+      # is the one the manifest promises, and a promise nothing runs on is not a
+      # promise. It earns its place, too. node --test did not accept glob
+      # patterns before Node 21, so a test script written as a glob passes on a
+      # current Node and silently runs no tests at all on Node 18, reporting
+      # green either way. tools/verify.mjs asserts the script names its files.
+      - name: Show the version under test
+        run: node --version
+
+      - name: Tests
+        run: npm test
+
+      - name: Repository assertions
+        run: npm run verify
+
+      # A syntax check that exits 0 because its glob matched nothing is worse
+      # than no check: it looks like coverage. This fails when it finds nothing.
+      #
+      # The theme assets are classic scripts and the tooling is ES modules, and
+      # node --check decides which to expect from the file extension, so .js and
+      # .mjs are both checked as written without a flag.
+      - name: Syntax check every JavaScript file
+        run: |
+          mapfile -t files < <(find . -type f \( -name '*.js' -o -name '*.mjs' \) \
+            -not -path './node_modules/*' -not -path './.git/*' | sort)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No JavaScript found. This check would otherwise pass by checking nothing."
+            exit 1
+          fi
+          echo "Checking ${#files[@]} file(s) with $(node --version)"
+          for f in "${files[@]}"; do
+            echo "  $f"
+            node --check "$f"
+          done
