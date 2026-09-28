@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Variant swatches as a radio group</title>
+  <style>
+    .variant { border: 0; padding: 0; margin: 0 0 1rem; }
+    .variant__legend { padding: 0; margin-bottom: 0.5rem; font-weight: 600; }
+    .variant__input {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+      white-space: nowrap; border: 0;
+    }
+    .variant__label {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 44px; min-height: 44px; padding: 0.5rem 0.75rem;
+      border: 1px solid #767676; cursor: pointer;
+    }
+    /* Selection is shown by more than colour: the border thickens and the fill
+       inverts, so the state survives greyscale and high contrast mode. */
+    .variant__input:checked + .variant__label {
+      border-width: 2px; background: #121212; color: #ffffff;
+    }
+    .variant__input:focus-visible + .variant__label {
+      outline: 3px solid currentColor; outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Native radio inputs give arrow-key movement, one tab stop for the group,
+       the selected state announced automatically, the group question announced
+       from the legend, and correct behaviour in Windows high contrast mode.
+       The colour name is text, because a coloured square alone conveys its
+       value by colour and nothing else. -->
+  <fieldset class="variant">
+    <legend class="variant__legend">Colour</legend>
+
+    <input type="radio" class="variant__input" id="opt-colour-oatmeal" name="Colour" value="Oatmeal" checked>
+    <label class="variant__label" for="opt-colour-oatmeal">Oatmeal</label>
+
+    <input type="radio" class="variant__input" id="opt-colour-charcoal" name="Colour" value="Charcoal">
+    <label class="variant__label" for="opt-colour-charcoal">Charcoal</label>
+
+    <input type="radio" class="variant__input" id="opt-colour-rust" name="Colour" value="Rust">
+    <label class="variant__label" for="opt-colour-rust">Rust</label>
+  </fieldset>
+</body>
+</html>

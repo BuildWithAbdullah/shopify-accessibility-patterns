@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Variant swatches built from div elements</title>
+  <style>
+    .swatch { display: inline-block; width: 44px; height: 44px; border: 1px solid #767676; }
+    .swatch.is-selected { border-color: #121212; }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <!-- Swatches built from div elements with click handlers cannot be reached by
+       keyboard at all. There is no group name, so a screen reader user entering
+       the control is told nothing about what is being chosen, and the selected
+       state is carried by a border colour with no text equivalent. -->
+  <p class="swatch-group__label">Colour</p>
+  <div class="swatch-group">
+    <div class="swatch is-selected" data-option-value="Oatmeal" style="background:#e7dfd2"></div>
+    <div class="swatch" data-option-value="Charcoal" style="background:#3a3a3a"></div>
+    <div class="swatch" data-option-value="Rust" style="background:#9c4a2f"></div>
+  </div>
+</body>
+</html>
