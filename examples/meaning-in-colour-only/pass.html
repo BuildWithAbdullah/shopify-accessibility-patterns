@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sale price named in text</title>
+  <style>
+    .price--sale { color: #b00020; font-weight: 600; }
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+      white-space: nowrap; border: 0;
+    }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <h1>Wool throw</h1>
+
+  <!-- The hidden labels supply the meaning the strikethrough and the colour
+       carry visually. Sighted users see no change. -->
+  <p class="price">
+    <span class="visually-hidden">Sale price</span>
+    <span class="price--sale">18.00</span>
+    <span class="visually-hidden">Regular price</span>
+    <s>24.00</s>
+  </p>
+</body>
+</html>
