@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skip link that is focusable, with a focusable target</title>
+  <style>
+    /* Offset off screen rather than hidden, so it stays in the tab order, and
+       brought back on focus. */
+    .skip-link {
+      position: absolute; top: 0; left: 0; z-index: 1000;
+      padding: 0.75rem 1rem; background: #ffffff; color: #121212;
+      text-decoration: underline; transform: translateY(-200%);
+    }
+    .skip-link:focus {
+      transform: translateY(0);
+      outline: 3px solid #121212; outline-offset: 2px;
+    }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#MainContent">Skip to main content</a>
+
+  <nav aria-label="Primary">
+    <a href="/collections/all">Shop all</a>
+    <a href="/collections/new">New in</a>
+  </nav>
+
+  <!-- tabindex="-1" is the part that is usually missing. It is what makes the
+       target accept programmatic focus without adding a tab stop. -->
+  <main id="MainContent" tabindex="-1">
+    <h1>New in</h1>
+  </main>
+</body>
+</html>

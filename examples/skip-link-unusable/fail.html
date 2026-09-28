@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skip link that cannot be reached or used</title>
+  <style>
+    /* Hidden with display:none, so it is out of the tab order and can never be
+       reached. A skip link nobody can focus is not a skip link. */
+    .skip-link { display: none; }
+    .skip-link:focus { display: block; }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#MainContent">Skip to main content</a>
+
+  <nav aria-label="Primary">
+    <a href="/collections/all">Shop all</a>
+    <a href="/collections/new">New in</a>
+  </nav>
+
+  <!-- The second half of the defect: no tabindex on the target. Several
+       browsers scroll to it and leave focus behind, so the link appears to work
+       and the next Tab press returns to the second navigation item. -->
+  <main id="MainContent">
+    <h1>New in</h1>
+  </main>
+</body>
+</html>
