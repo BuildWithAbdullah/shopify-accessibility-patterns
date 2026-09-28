@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus indicator shown for keyboard input only</title>
+  <style>
+    /* :focus-visible answers the objection the reset was reaching for. The
+       indicator appears for keyboard and other non-pointer input and is
+       suppressed for mouse clicks, so nothing has to be turned off. */
+    :focus-visible {
+      outline: 3px solid #121212;
+      outline-offset: 2px;
+    }
+
+    /* Windows high contrast mode discards author colours, so a coloured ring
+       can disappear. A transparent outline is repainted by the OS. */
+    @media (forced-colors: active) {
+      :focus-visible { outline: 3px solid transparent; }
+    }
+
+    .button { min-height: 44px; padding: 0.5rem 1rem; border: 1px solid #767676; }
+  </style>
+</head>
+<body>
+  <!-- Same body, and the indicator is back for keyboard users only. The
+       objection the reset was answering, that the ring appears on mouse click,
+       is answered by :focus-visible instead of by turning the ring off. -->
+  <nav aria-label="Primary">
+    <a href="/collections/all">Shop all</a>
+    <a href="/collections/new">New in</a>
+  </nav>
+  <button type="button" class="button">Add to cart</button>
+</body>
+</html>

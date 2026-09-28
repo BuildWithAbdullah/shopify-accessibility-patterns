@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus indicator removed globally</title>
+  <style>
+    /* One line, added because a designer objected to the ring appearing on
+       mouse click, and keyboard navigation is gone for the entire store. It is
+       present in a large share of shipped themes. */
+    *:focus { outline: none; }
+
+    .button { min-height: 44px; padding: 0.5rem 1rem; border: 1px solid #767676; }
+  </style>
+</head>
+<body>
+  <!-- Nothing in this body is wrong. The defect is one line in the stylesheet
+       above, and it applies to every control on the page: the navigation links,
+       the add to cart button, and everything else in the store. A keyboard user
+       cannot tell where they are. -->
+  <nav aria-label="Primary">
+    <a href="/collections/all">Shop all</a>
+    <a href="/collections/new">New in</a>
+  </nav>
+  <button type="button" class="button">Add to cart</button>
+</body>
+</html>
