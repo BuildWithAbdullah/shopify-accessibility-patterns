@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Nothing about scaling. The real fix for the iOS zoom-on-focus behaviour
+       the restriction was aimed at is a font size of at least 16px on form
+       fields, which is a style problem and not a viewport problem. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zoom available</title>
+  <style>
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+    .price { font-size: 1rem; }
+    /* 16px minimum on fields, which is what stops iOS zooming on focus. */
+    input, select, textarea { font-size: 1rem; border: 1px solid #767676; }
+  </style>
+</head>
+<body>
+  <h1>Wool throw</h1>
+  <p class="price">24.00</p>
+</body>
+</html>
