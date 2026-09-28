@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product card, whole card wrapped in a link</title>
+  <style>
+    .card { position: relative; }
+    .card__add { margin-top: 0.5rem; min-height: 44px; }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <!-- Wrapping the card in an anchor is the quickest way to make the whole
+       thing clickable, and it puts a button inside a link. One target, two
+       conflicting roles. This renders once per product, so a collection page
+       of twenty-four products reports twenty-four findings from one defect. -->
+  <div class="card">
+    <a class="card__link" href="/products/wool-throw">
+      <img src="wool-throw.jpg" alt="Wool throw in oatmeal" width="300" height="300">
+      <h3 class="card__title">Wool throw</h3>
+      <button type="button" class="card__add">Quick add</button>
+    </a>
+  </div>
+</body>
+</html>

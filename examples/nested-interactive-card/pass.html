@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product card, controls as siblings</title>
+  <style>
+    .card { position: relative; }
+    /* The stretched link keeps the whole card clickable for a pointer without
+       nesting anything inside anything. Every other control sits above it. */
+    .card__link::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+    .card__add { position: relative; z-index: 2; min-height: 44px; }
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+      white-space: nowrap; border: 0;
+    }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card__media">
+      <img src="wool-throw.jpg" alt="Wool throw in oatmeal" width="300" height="300">
+    </div>
+
+    <h3 class="card__title">
+      <a class="card__link" href="/products/wool-throw">Wool throw</a>
+    </h3>
+
+    <form method="post" action="/cart/add">
+      <input type="hidden" name="id" value="41234567890123">
+      <!-- The hidden suffix is what stops a screen reader user hearing
+           "Quick add" twenty-four times with no way to tell them apart. -->
+      <button type="submit" class="card__add">
+        Quick add<span class="visually-hidden">, Wool throw</span>
+      </button>
+    </form>
+  </div>
+</body>
+</html>
