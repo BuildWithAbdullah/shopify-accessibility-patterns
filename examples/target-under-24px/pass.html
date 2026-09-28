@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagination targets at the minimum size</title>
+  <style>
+    /* Grow the target, not the glyph. The digit stays the size the design calls
+       for; the hit area is padded out to 24 by 24. Note that the AA minimum is
+       24, not 44: 44 is 2.5.5 at Level AAA and the Apple guideline, and audit
+       reports misattribute it to 2.5.8 constantly, which inflates finding
+       counts and sends clients to redesign components that already conform. */
+    .pagination__item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      min-height: 24px;
+    }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <!-- Identical markup. The digit is the same size and the hit area is not,
+       because the fix belongs in the stylesheet and costs the design nothing.
+       The Level AA minimum is 24 by 24, not 44. -->
+  <nav aria-label="Pagination">
+    <a class="pagination__item" href="/collections/all?page=1">1</a>
+    <a class="pagination__item" href="/collections/all?page=2">2</a>
+    <a class="pagination__item" href="/collections/all?page=3">3</a>
+  </nav>
+</body>
+</html>

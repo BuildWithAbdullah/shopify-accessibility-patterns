@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagination targets below the minimum size</title>
+  <style>
+    /* 16 by 16. The AA minimum under 2.5.8 is 24 by 24 CSS px. Pagination and
+       colour swatch grids are where commerce themes fall under it, because the
+       target is sized to the glyph rather than to the hand. */
+    .pagination__item {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      text-align: center;
+    }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <!-- The markup is fine. The target is 16 by 16 because it was sized to the
+       digit rather than to a fingertip, which is how pagination and swatch
+       grids end up under the 2.5.8 minimum on almost every commerce theme. -->
+  <nav aria-label="Pagination">
+    <a class="pagination__item" href="/collections/all?page=1">1</a>
+    <a class="pagination__item" href="/collections/all?page=2">2</a>
+    <a class="pagination__item" href="/collections/all?page=3">3</a>
+  </nav>
+</body>
+</html>
