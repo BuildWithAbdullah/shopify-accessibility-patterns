@@ -22,6 +22,10 @@
   Header icon buttons (cart, search, account, menu) are the highest volume
   source of unnamed controls on Shopify themes. One shared snippet fixes all
   of them at once and stops the problem returning.
+
+  The label is escaped. It is usually a literal in the template, but it is also
+  the obvious place for a merchant-editable string to arrive from a section
+  setting, and an apostrophe in an unescaped attribute is how that goes wrong.
 {%- endcomment -%}
 
 <button
@@ -30,8 +34,29 @@
   {% if controls %}aria-controls="{{ controls }}"{% endif %}
   {% unless expanded == nil %}aria-expanded="{{ expanded | default: false }}"{% endunless %}
 >
-  {%- render 'icon-' | append: icon -%}
-  <span class="visually-hidden">{{ label }}</span>
+  {%- comment -%}
+    The icon is chosen with a case block and not by building the snippet name
+    from the icon parameter. Liquid's render tag takes a string literal: it does
+    not accept a variable and it does not accept a filtered expression, so
+    building a name with append resolves to nothing, renders nothing, and
+    reports no error. The button then has an accessible name and no glyph, which
+    looks like a missing icon file and is diagnosed as one.
+
+    The snippet names on the right are Dawn's. Change them to match the theme.
+  {%- endcomment -%}
+  {%- case icon -%}
+    {%- when 'cart' -%}
+      {%- render 'icon-cart' -%}
+    {%- when 'search' -%}
+      {%- render 'icon-search' -%}
+    {%- when 'account' -%}
+      {%- render 'icon-account' -%}
+    {%- when 'menu' -%}
+      {%- render 'icon-hamburger' -%}
+    {%- when 'close' -%}
+      {%- render 'icon-close' -%}
+  {%- endcase -%}
+  <span class="visually-hidden">{{ label | escape }}</span>
 </button>
 
 {%- style -%}
