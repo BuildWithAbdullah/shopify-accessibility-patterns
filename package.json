@@ -1,0 +1,23 @@
+{
+  "name": "shopify-accessibility-patterns",
+  "version": "1.1.0",
+  "description": "Theme level accessibility patterns for Shopify Online Store 2.0, with the failing and corrected markup behind each one checked in CI.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/announce.mjs test/checks.mjs test/contrast.mjs test/css-contract.mjs test/css.mjs test/examples.mjs test/focus-order.mjs test/html.mjs test/liquid-contract.mjs test/liquid.mjs",
+    "verify": "node tools/verify.mjs",
+    "check": "npm test && npm run verify"
+  },
+  "keywords": [
+    "shopify",
+    "accessibility",
+    "wcag",
+    "liquid",
+    "ecommerce"
+  ]
+}

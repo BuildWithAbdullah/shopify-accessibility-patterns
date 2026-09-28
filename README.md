@@ -9,6 +9,12 @@ runtime patch layer or a script that repairs the page after it loads. Those are
 covered too, in [why overlays do not work](docs/06-why-overlays-fail.md) and in
 [the limits of patching what you do not control](docs/05-injection-limits.md).
 
+It also runs. Eleven failing and corrected page pairs in [`examples/`](examples/),
+a detector for each of them, a contract over the baseline stylesheet, a contract
+over every snippet, and 293 tests. `npm test && npm run verify` is the whole of
+it, there are no dependencies, and what the checks cannot see is written down in
+[what the checks do not see](docs/08-what-the-checks-do-not-see.md).
+
 ## Why a Shopify-specific repository
 
 Generic WCAG advice does not survive contact with a Liquid theme. The failures
@@ -35,6 +41,11 @@ here have a particular shape:
 | [`a11y-product-card.liquid`](snippets/a11y-product-card.liquid) | Product card with no nested interactive controls | 4.1.2, 2.4.4, 1.1.1 |
 | [`a11y-variant-picker.liquid`](snippets/a11y-variant-picker.liquid) | Variant swatches as a real radio group | 1.3.1, 2.1.1, 4.1.2 |
 
+Each of those carries a contract in
+[`tools/liquid-contract.mjs`](tools/liquid-contract.mjs) asserting what it emits,
+so the snippet and the claim in this table cannot drift apart. A new snippet
+without a contract fails the build.
+
 ## Assets
 
 | File | Purpose |
@@ -42,6 +53,13 @@ here have a particular shape:
 | [`a11y-base.css`](assets/a11y-base.css) | Focus visibility, the visually hidden utility, target sizes, reduced motion, control boundaries |
 | [`a11y-focus-trap.js`](assets/a11y-focus-trap.js) | Focus management for drawers, menus and modals, including returning focus to the trigger |
 | [`a11y-announcer.js`](assets/a11y-announcer.js) | One polite live region for AJAX cart and variant updates |
+
+The two JavaScript files are theme files: they run in a page and cannot be tested
+without shipping a DOM implementation as a dependency. What is testable is the
+part that actually goes wrong, so the decisions are pulled out into
+[`tools/focus-order.mjs`](tools/focus-order.mjs) and
+[`tools/announce.mjs`](tools/announce.mjs), unit tested there, and CI asserts that
+each asset still uses what its module specifies.
 
 ## Documentation
 
@@ -54,6 +72,70 @@ here have a particular shape:
 | [05 Injection limits](docs/05-injection-limits.md) | Guarded patching, and the point at which it becomes the wrong answer |
 | [06 Why overlays fail](docs/06-why-overlays-fail.md) | The argument, and what you find when you remove one |
 | [07 Theme audit checklist](docs/07-theme-audit-checklist.md) | A working order for a full theme audit |
+| [08 What the checks do not see](docs/08-what-the-checks-do-not-see.md) | The limits of everything in this repository that runs |
+
+## Examples
+
+Eleven pairs in [`examples/`](examples/), each a complete page you can open. The
+two sides differ only in the defect: same content, same layout, same wording.
+
+| Pair | Criteria | The failure |
+|---|---|---|
+| [`unnamed-icon-button`](examples/unnamed-icon-button) | 1.1.1, 4.1.2 | Header icon buttons whose only content is a decorative glyph |
+| [`nested-interactive-card`](examples/nested-interactive-card) | 4.1.2 | Quick add button inside the anchor wrapping the whole card |
+| [`swatch-not-a-control`](examples/swatch-not-a-control) | 1.3.1, 2.1.1, 4.1.2 | Variant swatches built from div elements with click handlers |
+| [`skip-link-unusable`](examples/skip-link-unusable) | 2.4.1 | Skip link hidden with display:none, pointing at a target that cannot take focus |
+| [`focus-outline-removed`](examples/focus-outline-removed) | 2.4.7 | A global outline reset, added to stop the ring appearing on mouse click |
+| [`viewport-scaling-blocked`](examples/viewport-scaling-blocked) | 1.4.4 | `user-scalable=no` and `maximum-scale=1` on the viewport meta tag |
+| [`dialog-not-a-dialog`](examples/dialog-not-a-dialog) | 1.3.1, 4.1.2 | Cart drawer with no role, no `aria-modal` and no accessible name |
+| [`meaning-in-colour-only`](examples/meaning-in-colour-only) | 1.4.1 | Sale price distinguished by a strikethrough and a red, with no text saying which is which |
+| [`live-region-arrives-populated`](examples/live-region-arrives-populated) | 4.1.3 | Cart status region inserted with its message already inside it |
+| [`field-without-label`](examples/field-without-label) | 1.3.5, 3.3.2, 4.1.2 | Newsletter email field whose placeholder is doing the work of a label |
+| [`target-under-24px`](examples/target-under-24px) | 2.5.8 | Pagination links sized 16 by 16 |
+
+One point of terminology, because audit reports get it wrong constantly: the
+Level AA target size minimum under 2.5.8 is 24 by 24 CSS pixels. The 44 figure
+belongs to 2.5.5 at Level AAA and to the Apple human interface guideline.
+Attributing it to Level AA inflates finding counts and sends clients off to
+redesign components that already conform.
+
+## Verifying
+
+```
+npm test          # 293 tests
+npm run verify    # 247 repository-level assertions
+npm run check     # both
+```
+
+No dependencies, no build step, no API key, no network access. Node 18 or newer.
+
+`npm test` covers the HTML and CSS scanners the checks are built on, the contrast
+arithmetic, the Liquid scanner, all eleven detectors in both directions, the
+stylesheet contract against a deliberately broken stylesheet, the snippet
+contracts against deliberately broken snippets, and the keyboard and live region
+logic behind the two theme assets.
+
+`npm run verify` asserts the things that are true of the repository as a whole
+and quietly stop being true as it grows. Among them:
+
+- every failing example trips its own detector and nothing else;
+- every corrected example trips no detector in the repository at all;
+- every detector has a pair, and every pair has a detector;
+- every snippet has a contract, and every contract holds;
+- the baseline stylesheet still makes every guarantee this README describes,
+  including that its control boundary colour clears 3:1 on white, computed rather
+  than asserted;
+- each theme asset still uses the selector list and the live region attributes its
+  module specifies;
+- every file in `test/` is named in the test script, because `node --test` did not
+  accept glob patterns before Node 21, so a glob passes locally and silently finds
+  nothing on the oldest version this repository supports;
+- nothing in the repository uses a Node API newer than the version the manifest
+  claims;
+- every file this README links to exists, and every snippet, asset and document
+  present is listed in it.
+
+CI runs both on Node 18, 20 and 22.
 
 ## Installing
 
@@ -85,6 +167,14 @@ Then render the snippets where the theme currently has its own versions:
 {% render 'a11y-variant-picker', product: product %}
 ```
 
+`a11y-icon-button` maps the `icon` parameter to a theme icon snippet with a case
+block rather than building the snippet name with `append`. Liquid's `render` tag
+takes a string literal: a filtered expression is not one, so a name built that way
+resolves to nothing and renders nothing, with no error. The button keeps its
+accessible name and loses its glyph, which looks like a missing icon file and gets
+diagnosed as one. The snippet names in that block are Dawn's, so change them to
+match the theme.
+
 ## Compatibility
 
 Written against Online Store 2.0 themes using the Dawn conventions: colour
@@ -93,10 +183,11 @@ scheme custom properties, `snippets/`, `sections/`, and the
 property names will differ between themes, so check the selectors before
 copying wholesale. The patterns themselves are theme-independent.
 
-## Verify your work
+## Related
 
 The failing and corrected patterns behind these fixes, indexed by success
-criterion and checked by an axe-core harness in CI, are in
+criterion across all of WCAG rather than only the Shopify-shaped subset, and
+checked by an axe-core harness, are in
 [wcag-fix-library](https://github.com/BuildWithAbdullah/wcag-fix-library).
 
 ## Standard
