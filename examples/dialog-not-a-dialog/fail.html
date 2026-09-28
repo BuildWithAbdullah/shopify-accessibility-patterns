@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cart drawer with no dialog semantics</title>
+  <style>
+    .drawer { position: fixed; inset: 0 0 0 auto; width: 22rem; background: #ffffff; }
+    .drawer__close { min-width: 44px; min-height: 44px; }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main id="MainContent" tabindex="-1">
+    <h1>New in</h1>
+  </main>
+
+  <!-- A div that slides in. There is no role, so nothing announces that a
+       dialog opened; no aria-modal, so a screen reader still offers the page
+       behind it; and no accessible name, so even a user who finds it is not
+       told what it is. Nothing in this markup distinguishes a drawer that takes
+       focus from one that does not, which is why no scan reports it. -->
+  <div id="CartDrawer" class="drawer">
+    <h2>Your cart</h2>
+    <p>2 items</p>
+    <button type="button" class="drawer__close">Close</button>
+  </div>
+</body>
+</html>

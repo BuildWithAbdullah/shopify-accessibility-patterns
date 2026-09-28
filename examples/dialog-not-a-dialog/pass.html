@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cart drawer with dialog semantics</title>
+  <style>
+    .drawer { position: fixed; inset: 0 0 0 auto; width: 22rem; background: #ffffff; }
+    .drawer__close { min-width: 44px; min-height: 44px; }
+    :focus-visible { outline: 3px solid #121212; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main id="MainContent" tabindex="-1">
+    <h1>New in</h1>
+  </main>
+
+  <!-- role and aria-modal are the semantics. The hidden attribute keeps the
+       drawer out of the tab order while it is closed, tabindex="-1" lets the
+       container itself take focus when it holds no controls yet, and
+       aria-labelledby points at the heading that is already there. Moving focus
+       in on open, making the rest of the page inert, and returning focus to the
+       trigger on close are behaviour, and they live in
+       assets/a11y-focus-trap.js. -->
+  <div id="CartDrawer"
+       class="drawer"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="CartDrawerTitle"
+       tabindex="-1"
+       data-a11y-dialog
+       hidden>
+    <h2 id="CartDrawerTitle">Your cart</h2>
+    <p>2 items</p>
+    <button type="button" class="drawer__close" data-a11y-dialog-close>Close</button>
+  </div>
+</body>
+</html>
