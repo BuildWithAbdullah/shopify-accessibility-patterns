@@ -10,9 +10,17 @@ covered too, in [why overlays do not work](docs/06-why-overlays-fail.md) and in
 [the limits of patching what you do not control](docs/05-injection-limits.md).
 
 It also runs. Eleven failing and corrected page pairs in [`examples/`](examples/),
-a detector for each of them, a contract over the baseline stylesheet, a contract
-over every snippet, and 293 tests. `npm test && npm run verify` is the whole of
-it, there are no dependencies, and what the checks cannot see is written down in
+a catalogue of 32 findings in
+[`docs/09-finding-catalogue.md`](docs/09-finding-catalogue.md) every one of which
+is observed firing in CI, eight fixtures reaching the fifteen of them no pair
+touches, a contract over the baseline stylesheet, a contract over every snippet,
+and 356 tests. `npm run check` is the whole of it and there are no dependencies.
+
+What the checks cannot see is not written down any more, it is asserted.
+[`test/gap.mjs`](test/gap.mjs) holds the six declared limits in
+[`tools/limits.mjs`](tools/limits.mjs), four of them in both directions: the same
+outcome for a visitor gets either verdict depending on something that is not a
+property of the page. The long form of the argument is still in
 [what the checks do not see](docs/08-what-the-checks-do-not-see.md).
 
 ## Why a Shopify-specific repository
@@ -73,6 +81,7 @@ each asset still uses what its module specifies.
 | [06 Why overlays fail](docs/06-why-overlays-fail.md) | The argument, and what you find when you remove one |
 | [07 Theme audit checklist](docs/07-theme-audit-checklist.md) | A working order for a full theme audit |
 | [08 What the checks do not see](docs/08-what-the-checks-do-not-see.md) | The limits of everything in this repository that runs |
+| [09 Finding catalogue](docs/09-finding-catalogue.md) | Every finding the checks can report, its fix, and what it cannot establish. Generated, and checked in CI |
 
 ## Examples
 
@@ -99,15 +108,64 @@ belongs to 2.5.5 at Level AAA and to the Apple human interface guideline.
 Attributing it to Level AA inflates finding counts and sends clients off to
 redesign components that already conform.
 
+## Findings, not checks
+
+A check is a question and a finding is an answer, and the answers have different
+fixes. `unnamed-control` covers a button holding a decorative graphic, a button
+whose `aria-labelledby` points at an id nothing in the file has, and a button
+whose `aria-label` is a space. The first needs somebody to decide what the
+control is called, the second is a one word edit, and the third is a theme
+setting the merchant left blank. Reporting all three under one id puts them in
+one queue, which is how the cheap ones stay unfixed.
+
+So every finding carries its own code, and
+[`docs/09-finding-catalogue.md`](docs/09-finding-catalogue.md) lists all 32 with
+the fix and the limit beside each. The catalogue is generated from
+[`tools/findings.mjs`](tools/findings.mjs) and regenerated in CI, so it cannot
+drift from the code.
+
+The eleven pairs reach 17 of those 32. The other fifteen had never fired once,
+behind a verifier that asserted every check had a pair and was green. The eight
+fixtures in [`test/fixtures/`](test/fixtures/) reach them, and writing those
+fixtures turned up nine defects in the detectors, seven of them in branches no
+pair touched. The pairs are the illustrations. The fixtures are the coverage.
+
+## The limits, asserted
+
+The argument this repository makes is that the expensive Shopify accessibility
+failures are the ones no static check reports. Until
+[`test/gap.mjs`](test/gap.mjs) existed, that argument was the one claim nothing
+checked.
+
+Six limits are declared in [`tools/limits.mjs`](tools/limits.mjs) and exercised
+there, four in both directions. The sharpest is `semantics-are-not-behaviour`.
+All four combinations of the two verdicts are constructed: a drawer with
+`role="dialog"`, `aria-modal="true"` and a name, where this repository's own
+focus arithmetic says focus goes nowhere when it opens; a drawer with none of
+the three where focus lands correctly; and both of the agreeing cases. Reaching
+all four is what independence means, and it is a sharper statement than saying
+the check misses behaviour: neither verdict is even weak evidence for the other.
+
+A residual set asserts the limits of one tool. This asserts the limits of the
+method, which is the thing a client is paying for.
+
 ## Verifying
 
 ```
-npm test          # 293 tests
-npm run verify    # 247 repository-level assertions
-npm run check     # both
+npm test             # 356 tests
+npm run verify       # 308 repository-level assertions
+npm run count        # the test count, read from node:test's event stream
+npm run catalogue    # regenerate docs/09-finding-catalogue.md
+npm run check        # tests, assertions and the count
 ```
 
-No dependencies, no build step, no API key, no network access. Node 18 or newer.
+No dependencies, no build step, no API key, no network access. Node 20.0.0 or
+newer, and that figure is exact on purpose. The manifest used to say `>=18` and
+this section used to say Node 18 or newer, and `node --test`, which the whole
+suite depends on, did not exist until 18.1.0. The suite could not run at all on
+the version both of them promised, and CI was green throughout, because a job
+named `18` resolves to the newest 18.x. The verifier now asserts that the floor
+is an exact version and that the matrix runs it as written.
 
 `npm test` covers the HTML and CSS scanners the checks are built on, the contrast
 arithmetic, the Liquid scanner, all eleven detectors in both directions, the
@@ -130,12 +188,25 @@ and quietly stop being true as it grows. Among them:
 - every file in `test/` is named in the test script, because `node --test` did not
   accept glob patterns before Node 21, so a glob passes locally and silently finds
   nothing on the oldest version this repository supports;
+- every finding the manifest declares is in the catalogue, every catalogued
+  finding is reached by a pair or a fixture, and the fixtures reach something the
+  pairs do not, which is the only reason they exist;
+- the generated catalogue matches what its generator produces, compared against
+  the builder rather than regenerated by it, because a verifier that rewrites its
+  own subject always passes;
+- every declared limit is exercised in `test/gap.mjs`, and the test names no
+  limit the module does not declare;
+- the engines floor is an exact version rather than a bare major, and the CI
+  matrix runs that version as written;
 - nothing in the repository uses a Node API newer than the version the manifest
   claims;
 - every file this README links to exists, and every snippet, asset and document
   present is listed in it.
 
-CI runs both on Node 18, 20 and 22.
+CI runs the suite on Node 20.0.0, 22 and 24, and three further jobs: the test
+count read from the event stream on the newest version in the matrix, which is
+where a reporter based counter would break; a regenerate and diff of the
+catalogue; and an `--engine-strict` install and full run on the exact floor.
 
 ## Installing
 
