@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A field with no label and no placeholder standing in for one</title>
+</head>
+<body>
+  <!-- examples/field-without-label has a placeholder doing the work of a
+       label, which is the case that looks fine on screen. This is the one that
+       does not: a quantity field whose only description is the word printed
+       next to it in a div, associated with nothing. -->
+  <form class="product-form">
+    <div class="quantity__label">Quantity</div>
+    <input class="quantity__input" type="number" value="1" min="1">
+    <button class="button" type="submit">Add to cart</button>
+  </form>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A role=status region that arrives holding its message</title>
+</head>
+<body>
+  <!-- examples/live-region-arrives-populated uses aria-live. role="status"
+       carries an implicit aria-live of polite and fails identically, and a
+       theme is more likely to use the role, because the Shopify documentation
+       does. Same defect, different attribute, and the catalogue separates them
+       because somebody searching their theme will search for one or the other. -->
+  <main id="MainContent" tabindex="-1">
+    <h1>Cart</h1>
+    <p class="cart__status" role="status">Wool throw added to your cart</p>
+  </main>
+</body>
+</html>

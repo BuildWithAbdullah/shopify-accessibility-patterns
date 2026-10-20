@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Swatches with a class hook and no data attribute</title>
+</head>
+<body>
+  <!-- examples/swatch-not-a-control carries data-option-value, which is how
+       Dawn derived themes do it. A theme that reads the option out of the DOM
+       text instead leaves no data attribute at all, and the detector finds it
+       by class. That branch had never fired before this fixture. -->
+  <fieldset class="swatch-group">
+    <p class="swatch-group__label">Colour</p>
+    <div class="swatch is-selected" style="background:#e7dfd2"></div>
+    <div class="swatch" style="background:#3a3a3a"></div>
+    <span class="option-value">Rust</span>
+  </fieldset>
+</body>
+</html>

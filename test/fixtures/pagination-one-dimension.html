@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A target wide enough and not tall enough</title>
+  <style>
+    /* examples/target-under-24px fixes both dimensions below the minimum,
+       which is what sizing a target to its glyph does. This is the one that
+       gets missed in review: the target is comfortably wide, somebody checked
+       the width, and 2.5.8 asks for both. */
+    .pagination__item {
+      width: 44px;
+      height: 20px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <nav class="pagination" aria-label="Pagination">
+    <a class="pagination__item" href="/collections/all?page=1">1</a>
+    <a class="pagination__item" href="/collections/all?page=2">2</a>
+    <a class="pagination__item" href="/collections/all?page=3">3</a>
+  </nav>
+</body>
+</html>

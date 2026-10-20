@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Header controls named six different kinds of wrong</title>
+</head>
+<body>
+  <!-- A fixture, not an example pair. The pairs in examples/ each demonstrate
+       one defect on a complete page. This file exists to make a detector fire
+       for the reasons the pairs never reach, which on this repository was
+       fifteen of thirty-two findings when the catalogue was first written.
+
+       Every control below is unnamed, and every one is unnamed differently.
+       They are in the order a fix queue would want them: the first three are
+       edits to an attribute, the last three need somebody to decide what the
+       control is called. -->
+  <header class="header">
+    <!-- The id is HeaderCartLabel elsewhere in the theme. This section was
+         copied from another and the label went with the section it came from. -->
+    <button type="button" class="header__icon" aria-labelledby="CartLabel">
+      <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
+        <path d="M3 5h14l-1.5 10H4.5L3 5Z" fill="currentColor"></path>
+      </svg>
+    </button>
+
+    <!-- The target exists. It is rendered from a metafield that is empty for
+         most products, which is why this passes on the one product it was
+         written against. -->
+    <button type="button" class="header__icon" aria-labelledby="SearchLabel">
+      <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
+        <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="2"></circle>
+      </svg>
+    </button>
+    <span id="SearchLabel" class="visually-hidden"></span>
+
+    <!-- Liquid rendered the label from a setting the merchant left blank, so
+         the attribute is present and holds a space. -->
+    <button type="button" class="header__icon" aria-label=" ">
+      <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
+        <path d="M4 6h12M4 10h12M4 14h12" stroke="currentColor" stroke-width="2"></path>
+      </svg>
+    </button>
+
+    <!-- An uploaded icon rather than an inline graphic, which is what a
+         merchant does when the theme has no icon for the thing they want. -->
+    <button type="button" class="header__icon">
+      <img src="wishlist.png" width="20" height="20">
+    </button>
+
+    <!-- Not hidden, no title, no label. A screen reader has a graphic here and
+         nothing to say about it. -->
+    <button type="button" class="header__icon">
+      <svg focusable="false" width="20" height="20" viewBox="0 0 20 20">
+        <path d="M10 3l2 5h5l-4 3 1.5 5L10 13l-4.5 3L7 11 3 8h5l2-5Z" fill="currentColor"></path>
+      </svg>
+    </button>
+
+    <!-- The glyph was in a pseudo-element, and the pseudo-element moved to a
+         class the theme no longer sets. The link is now empty and still in the
+         tab order. -->
+    <a class="header__account" href="/account"></a>
+  </header>
+</body>
+</html>

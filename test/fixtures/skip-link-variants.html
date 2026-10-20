@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A skip link hidden the other way, and one pointing nowhere</title>
+  <style>
+    /* examples/skip-link-unusable uses display:none, which is the version
+       everybody quotes. visibility:hidden takes the link out of the tab order
+       just as completely and survives a review that greps for display:none. */
+    .skip-hidden {
+      visibility: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-hidden" href="#MainContent">Skip to content</a>
+
+  <!-- The second one is the failure that outlives a theme update. The link was
+       written against a section that has since been renamed, so it is visible,
+       focusable, announced correctly, and does nothing at all when activated. -->
+  <a class="skip-to-nav" href="#SiteNavigation">Skip to navigation</a>
+
+  <main id="MainContent" tabindex="-1">
+    <h1>Collections</h1>
+  </main>
+</body>
+</html>

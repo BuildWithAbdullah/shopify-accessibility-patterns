@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A focus reset scoped to buttons rather than applied universally</title>
+  <style>
+    /* examples/focus-outline-removed resets the outline with a universal
+       selector, which is what a theme does once. This is what a theme does
+       repeatedly afterwards: one component at a time, each addition looking
+       small, with nothing restoring an indicator for :focus-visible anywhere. */
+    .button:focus,
+    .quantity__input:focus {
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <form class="product-form">
+    <input class="quantity__input" type="number" id="Quantity" value="1">
+    <label for="Quantity">Quantity</label>
+    <button class="button" type="submit">Add to cart</button>
+  </form>
+</body>
+</html>

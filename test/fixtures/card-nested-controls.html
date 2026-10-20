@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Two kinds of nesting the product card pair does not show</title>
+</head>
+<body>
+  <!-- examples/nested-interactive-card shows a button inside the card link,
+       which is the common case. These are the other two pairings, and they are
+       worth separating because the fix differs: a link inside a link is almost
+       always a badge that should not have been linked, and a control inside a
+       control is usually two components that were each correct on their own. -->
+  <ul class="card-grid">
+    <li class="card">
+      <a class="card__link" href="/products/wool-throw">
+        <img src="wool-throw.jpg" alt="Wool throw in oatmeal" width="300" height="300">
+        <h2 class="card__title">Wool throw</h2>
+        <!-- The sale badge became a link to the sale collection, inside the
+             anchor that already wraps the card. -->
+        <a class="card__badge" href="/collections/sale">On sale</a>
+      </a>
+    </li>
+
+    <li class="card">
+      <h2 class="card__title"><a href="/products/linen-cushion">Linen cushion</a></h2>
+      <!-- A compare toggle styled as a button, with the real checkbox inside
+           it so the click target is the whole control. -->
+      <div class="card__compare" role="button" tabindex="0">
+        Compare
+        <input type="checkbox" aria-label="Compare linen cushion">
+      </div>
+    </li>
+  </ul>
+</body>
+</html>
