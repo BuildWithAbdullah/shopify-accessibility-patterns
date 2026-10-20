@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['18', '20', '22']
+        node: ['20.0.0', '22', '24']
 
     steps:
       - uses: actions/checkout@v7
@@ -23,12 +23,20 @@ jobs:
           node-version: ${{ matrix.node }}
 
       # There are no dependencies, on purpose, so there is nothing to install
-      # and nothing to cache. The matrix is the point: the oldest version in it
-      # is the one the manifest promises, and a promise nothing runs on is not a
-      # promise. It earns its place, too. node --test did not accept glob
-      # patterns before Node 21, so a test script written as a glob passes on a
-      # current Node and silently runs no tests at all on Node 18, reporting
-      # green either way. tools/verify.mjs asserts the script names its files.
+      # and nothing to cache. The matrix is the point, and the first entry in
+      # it is the point of the matrix.
+      #
+      # It is written as 20.0.0 rather than 20 because a bare major is not a
+      # version anybody promised. This repository declared >=18 and ran a job
+      # named '18' for its whole life, which actions/setup-node resolves to
+      # the newest 18.x, while node --test, which the whole suite depends on,
+      # did not exist until 18.1.0. The suite could not run at all on the
+      # version the manifest and the README both named, and CI was green the
+      # entire time. tools/verify.mjs now asserts that the floor in the
+      # manifest appears here exactly and never as a bare major.
+      #
+      # The other two entries stay bare on purpose: testing the newest release
+      # of a line is how a patch that breaks the suite gets noticed.
       - name: Show the version under test
         run: node --version
 
@@ -57,3 +65,65 @@ jobs:
             echo "  $f"
             node --check "$f"
           done
+
+  count:
+    name: Test count agrees with the README
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      # Counted from node:test's event stream rather than from reporter output.
+      # The reporter is the trap: node --test prints TAP on 20 and 22 and the
+      # spec reporter on 24, even when piped, so a counter that reads printed
+      # lines works until somebody upgrades. This job runs on the newest
+      # version in the matrix on purpose, because that is where a reporter
+      # based counter would break.
+      - name: Count the tests and compare against the README
+        run: npm run count
+
+  generated:
+    name: The generated catalogue is current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # docs/09-finding-catalogue.md is written from tools/findings.mjs and
+      # tools/limits.mjs. Regenerating and diffing is what stops the prose
+      # drifting from the code, which is the failure a hand maintained
+      # catalogue has within two edits.
+      #
+      # Generated with node, never with npm run. npm prints its own banner on
+      # stdout, so a step that redirects npm output into a file captures two
+      # lines of npm before the content and the comparison never matches. It
+      # passes locally, where whoever wrote it ran the script directly.
+      - name: Regenerate and compare
+        run: |
+          node tools/gen-catalogue.mjs
+          if ! git diff --exit-code -- docs/09-finding-catalogue.md; then
+            echo "docs/09-finding-catalogue.md is stale. Run node tools/gen-catalogue.mjs and commit it."
+            exit 1
+          fi
+
+  engines:
+    name: Install under the engines floor it promises
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20.0.0'
+
+      # engine-strict turns the engines field from documentation into a
+      # constraint. Without it the field is a comment, and a comment is what it
+      # was: this repository promised Node 18 and could not run on it.
+      - name: Install with the engines field enforced
+        run: npm install --engine-strict
+
+      - name: Run the suite on the exact floor
+        run: npm test && npm run verify
