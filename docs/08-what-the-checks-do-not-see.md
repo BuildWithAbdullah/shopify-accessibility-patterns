@@ -7,6 +7,19 @@ an audit, they are not a scanner, and passing them is not conformance. This page
 is the list of what they miss, because a verification layer whose limits are not
 written down is read as a stronger claim than it is.
 
+**Six of the limits below are now asserted rather than described.** They are
+declared in [`tools/limits.mjs`](../tools/limits.mjs) and exercised in
+[`test/gap.mjs`](../test/gap.mjs), four of them in both directions, and
+`tools/verify.mjs` fails if one is declared and not exercised or exercised and
+not declared. The id of each is given in the section it belongs to. The rest of
+this page is the part no assertion reaches, which is most of it, and the
+distinction between the two is worth more than either half: a limit that is
+asserted cannot be quietly narrowed, and a limit that is only written down can.
+
+The per finding version of the same thing, with what each individual finding
+cannot establish, is in the
+[finding catalogue](09-finding-catalogue.md).
+
 ## They read files, not pages
 
 Every check takes source text. Nothing here launches a browser, so nothing here
@@ -14,18 +27,29 @@ knows what a visitor actually gets.
 
 That rules out, entirely:
 
-- **The cascade.** The checks read declarations as written. A focus ring
-  cancelled by a later theme stylesheet, a colour inherited from a scheme the
-  merchant configured in the theme editor, a rule whose specificity loses: all
-  invisible.
-- **Computed size and colour.** `tools/checks.mjs` can tell you a rule sets a
-  target to 16 by 16. It cannot tell you the rendered size, because padding, line
-  height, a larger child and a pseudo-element all change it. The same applies to
-  contrast: `tools/contrast.mjs` is exact about the two colours it is handed and
-  knows nothing about which two colours are really in front of each other.
-- **Anything a script does.** A name added on load, a role assigned by a theme
-  component, an app that injects a review widget after first paint. The markup on
-  disk is the markup before any of that.
+- **The cascade** (`cascade-not-resolved`, asserted in both directions). The
+  checks read declarations as written, and they only read the declarations in
+  the file. A focus ring restored by a linked theme stylesheet makes a reported
+  finding wrong, and a ring cancelled by one makes an unreported page
+  defective, so the finding count carries no information about whether there is
+  an indicator on the screen. A colour inherited from a scheme the merchant
+  configured in the theme editor, and a rule whose specificity loses, are
+  invisible for the same reason.
+- **Computed size and colour** (`declared-size-is-not-rendered-size`, asserted
+  in both directions). `tools/checks.mjs` can tell you a rule sets a target to
+  16 by 16. It cannot tell you the rendered size, because padding, line height,
+  a transform, a larger child and a pseudo-element all change it. A 24 pixel
+  declaration under a half scale transform renders at 12 and is silent; a 16
+  pixel declaration with 8 pixels of padding renders at 32 and is reported. The
+  same applies to contrast: `tools/contrast.mjs` is exact about the two colours
+  it is handed and knows nothing about which two colours are really in front of
+  each other.
+- **Anything a script does** (`name-can-change-after-load`, asserted in both
+  directions). A name added on load, a role assigned by a theme component, an
+  app that injects a review widget after first paint. The markup on disk is the
+  markup before any of that, and the assertions use a page carrying its own
+  script, so the runtime outcome is in the file and still not something the
+  checks read.
 - **Generated content.** A label supplied by `::before` is a label this cannot
   read, and one that a screen reader may or may not announce depending on the
   browser.
@@ -52,6 +76,15 @@ trap itself cannot be, and the tests state which decisions are being checked.
 Whether the browser then puts focus where the arithmetic says is a question you
 answer by pressing Tab.
 
+This is the limit `semantics-are-not-behaviour` asserts, and it is asserted in
+the strongest available form. All four combinations of the two verdicts are
+constructed in `test/gap.mjs`: a drawer carrying all three attributes whose own
+focus arithmetic says focus goes nowhere when it opens, a drawer carrying none
+of them where focus lands correctly, and the two agreeing cases. Reaching all
+four is what independence means. A reader cannot treat the static verdict as
+weak evidence about behaviour, because it is not evidence about behaviour at
+all.
+
 ## They check the pattern, not your theme
 
 The example pairs in `examples/` are written to demonstrate one defect each, and
@@ -60,6 +93,17 @@ else, and a corrected page trips nothing in the repository at all. That makes th
 pairs trustworthy as illustrations. It says nothing about a real theme, where
 defects arrive several at a time, interact, and are usually worse in combination
 than separately.
+
+It also says much less about coverage than it reads as saying, and that is the
+limit `pairs-do-not-cover-the-catalogue` asserts. One defect per page means that
+for every check with more than one reason to fire, the pairs reach a strict
+subset of its findings. This repository asserted that every check had a pair,
+and was green, while fifteen of the thirty-two findings in the catalogue had
+never fired once. The eight fixtures in `test/fixtures/` exist to close that,
+and writing them turned up nine defects in the detectors, seven of them in
+branches no pair touched. The assertion is deliberately written to fail if the
+pairs ever do reach everything, because at that point the limit has gone and the
+sentence should go with it.
 
 The snippet contracts have the sharper version of this limit. Nothing executes
 Liquid, so the contracts read a skeleton with the Liquid stripped and every
@@ -77,7 +121,9 @@ Some of the most expensive findings in a real audit are ones no tool will ever
 produce, because they are judgements:
 
 - Whether a link's name says where it goes. `unnamed-control` is satisfied by
-  "click here".
+  "click here" (`a-name-is-not-a-good-name`, asserted in one direction, which is
+  the honest one: a link named "click here" produces no finding anywhere in this
+  repository).
 - Whether a heading structure describes the page or just happens to be nested
   correctly.
 - Whether alt text is useful. An empty `alt` is correct for a decorative image
@@ -104,11 +150,13 @@ reasoning is in [what you cannot fix](04-what-you-cannot-fix.md):
 
 ## What passing actually means
 
-`npm test` and `npm run verify` green means: the patterns in this repository
-still emit what they claim to emit, the stylesheet still makes the guarantees the
-README describes, every failing example still fails for the reason given, and
+`npm run check` green means: the patterns in this repository still emit what they
+claim to emit, the stylesheet still makes the guarantees the README describes,
+every failing example still fails for exactly the findings the manifest names,
 every corrected example still carries no other defect that this repository knows
-how to look for.
+how to look for, every finding in the catalogue has been observed firing on a
+real page, and every limit on this page that can be asserted still holds in the
+directions claimed for it.
 
 That is worth having, and it is a much smaller claim than conformance. The
 remaining work on any real theme is keyboard testing, a screen reader, and
