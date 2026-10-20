@@ -17,12 +17,16 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { CHECKS, CHECK_IDS, checkById, runGrouped } from './checks.mjs';
+import { CHECKS, CHECK_IDS, checkById, runGrouped, runByCode } from './checks.mjs';
+import { FINDINGS, FINDING_CODES, checkOf } from './findings.mjs';
+import { LIMITS, LIMIT_IDS } from './limits.mjs';
+import { trackedFiles, trackedTextFiles } from './tracked.mjs';
 import { audit as auditCss } from './css-contract.mjs';
 import { auditSnippet, SNIPPETS_WITH_CONTRACTS } from './liquid-contract.mjs';
 import { FOCUSABLE_SELECTORS } from './focus-order.mjs';
 import { REGION_ATTRIBUTES, CLEAR_DELAY_MS } from './announce.mjs';
 import { stripComments } from './source.mjs';
+import { buildCatalogue } from './gen-catalogue.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -35,21 +39,14 @@ function read(...parts) {
   return readFileSync(join(ROOT, ...parts), 'utf8');
 }
 
-const SKIP_DIRS = new Set(['.git', 'node_modules', '.scratch']);
-const TEXT_EXTENSIONS = new Set(['.md', '.mjs', '.js', '.css', '.liquid', '.json', '.yml', '.yaml', '.html']);
-
-function walk(dir, out = []) {
-  for (const entry of readdirSync(dir)) {
-    if (SKIP_DIRS.has(entry)) continue;
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) walk(full, out);
-    else out.push(full);
-  }
-  return out;
-}
-
-const files = walk(ROOT);
-const textFiles = files.filter((f) => TEXT_EXTENSIONS.has(f.slice(f.lastIndexOf('.'))));
+/* The files a fresh clone contains, which is not the same as the files this
+   directory contains. The hand rolled walk this replaces skipped node_modules
+   by name, which is correct until the ignore list grows a second entry and
+   nobody remembers there are two places to add it. tools/tracked.mjs reads
+   .gitignore instead, so the figure beside the command in the README is the
+   figure a reader gets, whoever ran npm install. */
+const files = trackedFiles(ROOT);
+const textFiles = trackedTextFiles(ROOT, ['md', 'mjs', 'js', 'css', 'liquid', 'json', 'yml', 'yaml', 'html']);
 
 /* -------------------------------------------------------------------------
    1. Examples and detectors stay in step
@@ -279,9 +276,6 @@ const TOO_NEW = [
   [['import', 'meta', 'filename'].join('.'), 'Node 20.11'],
   [['Array', 'fromAsync'].join('.'), 'Node 22'],
   [['Promise', 'withResolvers'].join('.'), 'Node 22'],
-  [['.toSorted', '('].join(''), 'Node 20'],
-  [['.toReversed', '('].join(''), 'Node 20'],
-  [['.toSpliced', '('].join(''), 'Node 20'],
   [['glob', 'Sync'].join(''), 'Node 22'],
   [['node:', 'sqlite'].join(''), 'Node 22'],
   [['navigator', '.'].join(''), 'Node 21']
@@ -296,17 +290,136 @@ for (const [needle, version] of TOO_NEW) {
     offenders.map((f) => relative(ROOT, f)).join(', ')
   );
 }
+/* The floor has to be an exact version, and this assertion is here because
+   the bare major it replaces was a false promise for the whole life of the
+   repository. The manifest said >=18 and the README said Node 18 or newer,
+   and `node --test` did not exist until 18.1.0, so npm test could not run at
+   all on the version both of them promised. CI was green throughout, because
+   actions/setup-node resolves `18` to the newest 18.x, which is the one shape
+   of this mistake that can never be caught by testing it. An exact floor can
+   be installed and run, so it can be checked. */
+const floor = (pkg.engines?.node ?? '').replace(/^>=/, '');
 assert(
-  typeof pkg.engines?.node === 'string' && pkg.engines.node.includes('18'),
-  'the manifest states the oldest Node it supports',
+  /^\d+\.\d+\.\d+$/.test(floor),
+  'the engines floor is an exact version rather than a bare major, so it can be installed and run',
   pkg.engines?.node
 );
 
+const workflow = read('.github', 'workflows', 'ci.yml');
+assert(
+  workflow.includes(`'${floor}'`),
+  'the CI matrix runs the suite on the exact floor the manifest promises',
+  `looking for '${floor}' in the matrix`
+);
+/* The other entries in the matrix are deliberately bare majors: testing the
+   newest release of a line is how a patch that breaks the suite gets noticed.
+   The floor is the one that cannot be, because a bare major standing in for
+   the floor is the whole of the defect this replaces. */
+const floorMajor = floor.split('.')[0];
+assert(
+  !workflow.includes(`'${floorMajor}'`),
+  'the matrix does not name the floor as a bare major, which would resolve to the newest release of that line and test a version nobody promised',
+  `'${floorMajor}' would silently stand in for ${floor}`
+);
+
 /* -------------------------------------------------------------------------
-   8. The README describes what is actually here
+   8. The catalogue, the fixtures and the limits
+   ------------------------------------------------------------------------- */
+
+/* test/catalogue.mjs asserts the catalogue against what the detectors emit.
+   What is left for this file is the part that is true of the repository
+   rather than of a page: that the manifest, the catalogue and the generated
+   document cannot drift apart, and that the limits are exercised. */
+
+for (const entry of manifest.examples) {
+  assert(
+    Array.isArray(entry.onFail) && entry.onFail.length > 0,
+    `${entry.directory} declares the findings its failing page produces`
+  );
+  const unknown = (entry.onFail ?? []).filter((code) => !FINDING_CODES.includes(code));
+  assert(unknown.length === 0, `${entry.directory} declares only catalogued findings`, unknown.join(', '));
+}
+
+assert(
+  new Set(FINDING_CODES).size === FINDING_CODES.length,
+  'the catalogue declares no finding twice'
+);
+
+for (const id of CHECK_IDS) {
+  const mine = FINDING_CODES.filter((code) => checkOf(code) === id);
+  assert(mine.length > 0, `${id} has at least one catalogued finding`, `${mine.length}`);
+}
+
+const uncatalogued = FINDING_CODES.filter((code) => !CHECK_IDS.includes(checkOf(code)));
+assert(uncatalogued.length === 0, 'every catalogued finding names a check that exists', uncatalogued.join(', '));
+
+/* The fixtures are the coverage and the pairs are the illustrations, so a
+   fixture directory that quietly empties is a loss of coverage that nothing
+   else in this file would notice. */
+const fixtureFiles = readdirSync(join(ROOT, 'test', 'fixtures')).filter((f) => f.endsWith('.html'));
+assert(fixtureFiles.length > 0, 'the fixtures directory holds pages');
+
+const reachedByPairs = new Set(manifest.examples.flatMap((e) => e.onFail));
+const reachedByFixtures = new Set(
+  fixtureFiles.flatMap((f) => [...runByCode(read('test', 'fixtures', f)).keys()])
+);
+const unreached = FINDING_CODES.filter(
+  (code) => !reachedByPairs.has(code) && !reachedByFixtures.has(code)
+);
+assert(
+  unreached.length === 0,
+  'every catalogued finding is reached by a pair or a fixture',
+  unreached.join(', ')
+);
+assert(
+  [...reachedByFixtures].some((code) => !reachedByPairs.has(code)),
+  'the fixtures reach findings the pairs do not, which is the only reason they exist'
+);
+
+/* The generated document, compared against the builder rather than
+   regenerated by it. A verifier that rewrites its own subject always passes. */
+const catalogueDoc = read('docs', '09-finding-catalogue.md');
+assert(
+  catalogueDoc === buildCatalogue(),
+  'docs/09-finding-catalogue.md matches what tools/gen-catalogue.mjs produces',
+  'run node tools/gen-catalogue.mjs'
+);
+assert(
+  catalogueDoc.includes(`report: ${FINDINGS.length} of them`),
+  'the generated catalogue states the number of findings the module declares'
+);
+
+/* The limits are the most important claim in the repository and were prose
+   until test/gap.mjs existed. These two assertions are what stop one of them
+   being quietly dropped: an id removed from the test fails here, and an id
+   invented in the test fails here too. */
+const gapSource = read('test', 'gap.mjs');
+for (const limit of LIMITS) {
+  assert(
+    (gapSource.split(limit.id).length - 1) >= 2,
+    `the limit ${limit.id} is exercised in test/gap.mjs`
+  );
+  assert(limit.claim.length > 80, `the limit ${limit.id} states its claim`);
+}
+const idsInGap = [...gapSource.matchAll(/'([a-z-]+):/g)].map((m) => m[1]);
+const undeclared = [...new Set(idsInGap)].filter(
+  (id) => !LIMIT_IDS.includes(id) && LIMIT_IDS.some((known) => known.split('-')[0] === id.split('-')[0])
+);
+assert(
+  undeclared.length === 0,
+  'test/gap.mjs names no limit that tools/limits.mjs does not declare',
+  undeclared.join(', ')
+);
+
+/* -------------------------------------------------------------------------
+   9. The README describes what is actually here
    ------------------------------------------------------------------------- */
 
 const readme = read('README.md');
+assert(
+  readme.includes('docs/09-finding-catalogue.md'),
+  'the README links to the generated catalogue'
+);
 const linked = [...readme.matchAll(/\]\((?!https?:)([^)#]+)\)/g)].map((m) => m[1]);
 for (const target of new Set(linked)) {
   assert(existsSync(join(ROOT, target)), `README links to ${target} and it exists`);
